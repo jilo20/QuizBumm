@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'quiz_screen.dart';
 
 class PlayLobbyScreen extends StatelessWidget {
   final Color primaryColor;
@@ -59,7 +60,12 @@ class PlayLobbyScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const QuizScreen()),
+                    );
+                  },
                   icon: const Icon(Icons.play_arrow),
                   label: const Text("Start Solo Mode"),
                   style: ElevatedButton.styleFrom(
