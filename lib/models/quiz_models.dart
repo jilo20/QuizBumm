@@ -1,13 +1,89 @@
+class Quiz {
+  final String id;
+  final String title;
+  final String description;
+  final List<Question> questions;
+
+  Quiz({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.questions,
+  });
+
+  factory Quiz.fromJson(Map<String, dynamic> json) {
+    return Quiz(
+      id: json['id']?.toString() ?? '',
+      title: json['title'] ?? 'Untitled Quiz',
+      description: json['description'] ?? '',
+      questions: (json['questions'] as List<dynamic>?)
+              ?.map((q) => Question.fromJson(q))
+              .toList() ??
+          [],
+    );
+  }
+}
+
 class Question {
   final int id;
   final String text;
   final List<AnswerOption> options;
+  final String mode;
+  final List<MatchPair> pairs;
 
   Question({
     required this.id,
     required this.text,
     required this.options,
+    this.mode = 'swipe',
+    this.pairs = const [],
   });
+
+  factory Question.fromJson(Map<String, dynamic> json) {
+    var rawOptions = json['options'] as List<dynamic>? ?? [];
+    int correctIndex = json['correctIndex'] ?? 0;
+    
+    List<AnswerOption> parsedOptions = [];
+    for (int i = 0; i < rawOptions.length; i++) {
+      parsedOptions.add(AnswerOption(
+        id: i,
+        text: rawOptions[i].toString(),
+        isCorrect: i == correctIndex,
+      ));
+    }
+
+    List<MatchPair> parsedPairs = (json['pairs'] as List<dynamic>?)
+            ?.map((p) => MatchPair.fromJson(p))
+            .toList() ??
+        [];
+
+    return Question(
+      id: 0,
+      text: json['question'] ?? 'No question text',
+      options: parsedOptions,
+      mode: json['mode'] ?? 'swipe',
+      pairs: parsedPairs,
+    );
+  }
+}
+
+class MatchPair {
+  final String left;
+  final String right;
+
+  MatchPair({required this.left, required this.right});
+
+  factory MatchPair.fromJson(Map<String, dynamic> json) {
+    return MatchPair(
+      left: json['left'] ?? '',
+      right: json['right'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'left': left,
+    'right': right,
+  };
 }
 
 class AnswerOption {
@@ -21,36 +97,3 @@ class AnswerOption {
     required this.isCorrect,
   });
 }
-
-final mockQuestions = [
-  Question(
-    id: 1,
-    text: "Which Flutter widget is used for laying out children in a vertical array?",
-    options: [
-      AnswerOption(id: 1, text: "Row", isCorrect: false),
-      AnswerOption(id: 2, text: "Stack", isCorrect: false),
-      AnswerOption(id: 3, text: "Column", isCorrect: true),
-      AnswerOption(id: 4, text: "ListView", isCorrect: false),
-    ],
-  ),
-  Question(
-    id: 2,
-    text: "What command is used to create a new Flutter project?",
-    options: [
-      AnswerOption(id: 5, text: "flutter build", isCorrect: false),
-      AnswerOption(id: 6, text: "flutter create", isCorrect: true),
-      AnswerOption(id: 7, text: "flutter init", isCorrect: false),
-      AnswerOption(id: 8, text: "flutter start", isCorrect: false),
-    ],
-  ),
-  Question(
-    id: 3,
-    text: "Which programming language is used to develop Flutter apps?",
-    options: [
-      AnswerOption(id: 9, text: "Kotlin", isCorrect: false),
-      AnswerOption(id: 10, text: "Swift", isCorrect: false),
-      AnswerOption(id: 11, text: "Dart", isCorrect: true),
-      AnswerOption(id: 12, text: "Javascript", isCorrect: false),
-    ],
-  ),
-];

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'discover_screen.dart';
-import 'play_lobby_screen.dart';
 import 'creator_studio_screen.dart';
 import 'activity_screen.dart';
 
@@ -21,29 +20,9 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
 
-  late final List<Widget> _screens;
-
   @override
   void initState() {
     super.initState();
-    _screens = [
-      DiscoverScreen(
-        primaryColor: widget.primaryColor,
-        darkSlate: widget.darkSlate,
-      ),
-      PlayLobbyScreen(
-        primaryColor: widget.primaryColor,
-        darkSlate: widget.darkSlate,
-      ),
-      CreatorStudioScreen(
-        primaryColor: widget.primaryColor,
-        darkSlate: widget.darkSlate,
-      ),
-      ActivityScreen(
-        primaryColor: widget.primaryColor,
-        darkSlate: widget.darkSlate,
-      ),
-    ];
   }
 
   @override
@@ -84,7 +63,23 @@ class _MainScaffoldState extends State<MainScaffold> {
           ),
         ],
       ),
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: IndexedStack(
+        index: _currentIndex, 
+        children: [
+          DiscoverScreen(
+            primaryColor: widget.primaryColor,
+            darkSlate: widget.darkSlate,
+          ),
+          CreatorStudioScreen(
+            primaryColor: widget.primaryColor,
+            darkSlate: widget.darkSlate,
+          ),
+          ActivityScreen(
+            primaryColor: widget.primaryColor,
+            darkSlate: widget.darkSlate,
+          ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
@@ -97,11 +92,6 @@ class _MainScaffoldState extends State<MainScaffold> {
             icon: Icon(Icons.explore_outlined),
             activeIcon: Icon(Icons.explore),
             label: 'Discover',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.play_circle_outline),
-            activeIcon: Icon(Icons.play_circle),
-            label: 'Play',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_box_outlined),

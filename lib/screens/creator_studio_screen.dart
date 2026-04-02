@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'create_quiz_screen.dart';
+import 'play_lobby_screen.dart';
+import '../providers/quiz_provider.dart';
 
-class CreatorStudioScreen extends StatelessWidget {
+class CreatorStudioScreen extends ConsumerWidget {
   final Color primaryColor;
   final Color darkSlate;
 
@@ -11,7 +15,9 @@ class CreatorStudioScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quizzesAsync = ref.watch(fetchedQuizzesProvider);
+
     return DefaultTabController(
       length: 2,
       child: Column(
@@ -33,20 +39,80 @@ class CreatorStudioScreen extends StatelessWidget {
               children: [
                 _buildAnalyticsCard(),
                 const SizedBox(height: 24),
-                const Text(
-                  "My Quizzes",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // Navigate to Create Screen, and when we come back, we refresh the list
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CreateQuizScreen()),
+                    ).then((_) {
+                      ref.invalidate(fetchedQuizzesProvider);
+                    });
+                  },
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: const Text('Create New Quiz', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "My Quizzes",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () => ref.invalidate(fetchedQuizzesProvider),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
-                _buildCreatorQuizCard(
-                  "Dart Streams 101",
-                  "45 plays",
-                  "92% pass",
-                ),
-                _buildCreatorQuizCard(
-                  "Arch Linux Fundamentals",
-                  "128 plays",
-                  "65% pass",
+                quizzesAsync.when(
+                  data: (quizzes) {
+                    if (quizzes.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Center(
+                          child: Text(
+                            "No quizzes published yet. Create one!",
+                            style: TextStyle(color: Colors.grey.shade500),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    }
+                    return Column(
+                      children: quizzes.map((quiz) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PlayLobbyScreen(
+                                  primaryColor: primaryColor,
+                                  darkSlate: darkSlate,
+                                  quiz: quiz,
+                                ),
+                              ),
+                            );
+                          },
+                          child: _buildCreatorQuizCard(
+                            quiz.title,
+                            "Play now",
+                            "${quiz.questions.length} questions",
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, st) => Text("Error loading quizzes: $e"),
                 ),
               ],
             ),
